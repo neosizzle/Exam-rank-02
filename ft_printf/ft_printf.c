@@ -46,6 +46,21 @@ int ft_numlen(int num)
 	return i;
 }
 
+int ft_numlen_hex(unsigned int num)
+{
+	int	i;
+
+	i = 0;
+	if (num == 0)
+		return 1;
+	while (num != 0)
+	{
+		++i;
+		num /= 16;
+	}
+	return i;
+}
+
 int ft_atoi(char *str)
 {
 	int	res;
@@ -138,6 +153,27 @@ char	*ft_addzero(char *str, int num, int idx)
 		str++;
 	}
 	res[i] = 0;
+	return res;
+}
+
+char	*ft_itoa_hex(unsigned int n)
+{
+	char	*res;
+	char	*hex;
+	int		len;
+	int		offset;
+
+	hex = "0123456789abcdef";
+	len = ft_numlen_hex(n);
+	res = malloc(sizeof (char) * (len + 1));
+	offset = len - 1;
+	while (offset >= 0)
+	{
+		res[offset] = hex[n % 16];
+		n /= 16;
+		--offset;
+	}
+	res[len] = 0;
 	return res;
 }
 
@@ -330,10 +366,14 @@ void	process_dec(struct format  *format, va_list valist)
 	else
 		format->perc -= numlen_raw;
 
-	//string is nth when zero perc and zero value
+	//string is null when zero val widht and zero val percision
+	//string is 0 when there is 0 value width
+	//string is null when zero perc and zero value
 	//add zeros 0th idx onwards if num is positive
 	//add zeros 1st idx onwards if num is negative
-	if (num == 0 && format->width == 0 && format->has_width)
+	if (num == 0 && format->has_perc && format->has_width && format->perc == 0 && format->width == 0)
+		numstr_trimmed = ft_strdup("");
+	else if (num == 0 && format->width == 0 && format->has_width && format->has_perc == 0)
 		numstr_trimmed = ft_strdup("0");
 	else if (num == 0 && format->perc == 0 && format->has_perc)
 		numstr_trimmed = ft_strdup("");
@@ -358,7 +398,42 @@ void	process_dec(struct format  *format, va_list valist)
 
 void	process_hex(struct format  *format, va_list valist)
 {
-	
+	char			*hexstr_raw;
+	char			*hexstr_trimmed;
+	unsigned int	num;
+	int				hexlen_raw;
+
+	num = va_arg(valist, unsigned int);
+	hexstr_raw = ft_itoa_hex(num);
+	hexlen_raw = ft_numlen_hex(num);
+	// printf("numstr raw %s\n", hexstr_raw);
+	// printf("numlen raw %d\n", hexlen_raw);
+
+	//adjust for percision
+	if (format->perc <= hexlen_raw)
+		format->perc = 0;
+	else
+		format->perc -= hexlen_raw;
+
+	//if number is 0 and percision value is 0, string is ""
+	//append leading zeros to the string
+	if (num == 0 && format->has_perc && format->perc == 0)
+		hexstr_trimmed = ft_strdup("");
+	else
+		hexstr_trimmed = ft_addzero(hexstr_raw, format->perc, 0);
+
+	//adjust for width and print spaces
+	if (format->width <= ft_strlen(hexstr_trimmed))
+		format->width = 0;
+	else
+		format->width -= ft_strlen(hexstr_trimmed);
+	print_spaces(format);
+
+	//putstr and free, incremt letter cnt
+	ft_putstr(hexstr_trimmed);
+	format->letter_count += format->width + ft_strlen(hexstr_trimmed);
+	free(hexstr_trimmed);
+	free(hexstr_raw);
 }
 
 
@@ -373,9 +448,7 @@ void	process_conversions(char *str, int i, struct format *format, va_list valist
 	if (conv == 'd')
 		process_dec(format, valist);
 	if (conv == 'x')
-	{
-		/* code */
-	}
+		process_hex(format, valist);
 	
 }
 
@@ -413,11 +486,8 @@ int ft_printf(char *str, ... )
 // #include <limits.h>
 // int main(int argc, char const *argv[])
 // {
-// 	// int ret = ft_printf("123456789\n");
-// 	// int ret = printf("s10p ~%.10s` ~%.10s` ~%.10s` ~%.10s` ~%.10s`\n", "", "toto", "0123456789", "tjehurthteutuiehteute", NULL);
-// 	// int ret2 = ft_printf("s10p ~%.10s` ~%.10s` ~%.10s` ~%.10s` ~%.10s`\n", "", "toto", "0123456789", "tjehurthteutuiehteute", NULL);
-// 	// printf("ret : %d, ret2 : %d\n", ret, ret2);
-// 	printf("%0d\n", 0);
-// 	ft_printf("%0d\n", 0);
+// 	int ret = printf("x10w10p %10.10x %10.10x %10.10x %10.10x %10.10x %10.10x %10.10x %10.10x\n", 0, 1, 42, 4554, 2147483647, (int)2147483648, (int)-2147483648, (int)-2147483649);
+// 	int ret2 = ft_printf("x10w10p %10.10x %10.10x %10.10x %10.10x %10.10x %10.10x %10.10x %10.10x\n", 0, 1, 42, 4554, 2147483647, (int)2147483648, (int)-2147483648, (int)-2147483649);
+// 	printf("ret : %d, ret2 : %d\n", ret, ret2);
 // 	return 0;
 // }
