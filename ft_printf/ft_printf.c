@@ -383,8 +383,10 @@ void	process_dec(struct format  *format, va_list valist)
 	// 	numstr_trimmed = ft_addzero(numstr_raw, format->perc, 1);
 	if (num == 0 && format->has_perc && format->perc == 0)
 		numstr_trimmed = ft_strdup("");
-	else
+	else if (num >= 0)
 		numstr_trimmed = ft_addzero(numstr_raw, format->perc, 0);
+	else
+		numstr_trimmed = ft_addzero(numstr_raw, format->perc, 1);
 
 	//adjust for width
 	format->width = format->width - ft_strlen(numstr_trimmed);
@@ -440,7 +442,6 @@ void	process_hex(struct format  *format, va_list valist)
 	free(hexstr_raw);
 }
 
-
 void	process_conversions(char *str, int i, struct format *format, va_list valist)
 {
 	char	*test;
@@ -490,8 +491,8 @@ int ft_printf(char *str, ... )
 // #include <limits.h>
 // int main(int argc, char const *argv[])
 // {
-// 	int ret = printf("x10w10p %10.10x %10.10x %10.10x %10.10x %10.10x %10.10x %10.10x %10.10x\n", 0, 1, 42, 4554, 2147483647, (int)2147483648, (int)-2147483648, (int)-2147483649);
-// 	int ret2 = ft_printf("x10w10p %10.10x %10.10x %10.10x %10.10x %10.10x %10.10x %10.10x %10.10x\n", 0, 1, 42, 4554, 2147483647, (int)2147483648, (int)-2147483648, (int)-2147483649);
+// 	int ret = printf("%.5d\n", -1);
+// 	int ret2 = ft_printf("%.5d\n", -1);
 // 	printf("ret : %d, ret2 : %d\n", ret, ret2);
 // 	return 0;
 // }
