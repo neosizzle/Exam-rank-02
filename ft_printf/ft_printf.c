@@ -5,6 +5,8 @@
 
 struct format 
 {
+	int	has_perc;
+	int has_width;
 	int	perc;
 	int	width;
 	int letter_count;
@@ -12,6 +14,8 @@ struct format
 
 void	clear_format(struct format *format)
 {
+	format->has_perc = 0;
+	format->has_width = 0;
 	format->perc = 0;
 	format-> width = 0;
 }
@@ -27,6 +31,20 @@ int ft_strlen(char *str)
 	return i;
 }
 
+int ft_numlen(int num)
+{
+	int	i;
+
+	i = 0;
+	if (num == 0)
+		return 1;
+	while (num != 0)
+	{
+		++i;
+		num /= 10;
+	}
+	return i;
+}
 
 int ft_atoi(char *str)
 {
@@ -61,6 +79,116 @@ void ft_putstr(char *str)
 	
 }
 
+void ft_putnbr(int n)
+{
+	if (n == -2147483648)
+	{
+		ft_putstr("-2147483648");
+		return;
+	}
+	if (n >= 0 && n <= 9)
+	{
+		ft_putchar(n + '0');
+		return ;
+	}
+	if (n > 9)
+	{
+		ft_putnbr(n / 10);
+		ft_putnbr(n % 10);
+	}
+	if (n < 0)
+	{
+		ft_putchar('-');
+		ft_putnbr(n * -1);
+	}
+}
+
+char	*ft_strdup(char *str)
+{
+	char *res;
+	int	i;
+
+	res = (char *)malloc(sizeof(char) *( ft_strlen(str) + 1));
+	i = -1;
+	while (++i < ft_strlen(str))
+		res[i] = str[i];
+	res[i] = 0;
+	return res;
+}
+
+char	*ft_addzero(char *str, int num, int idx)
+{
+	char	*res;
+	int i;
+
+	res = malloc(sizeof(char) * (ft_strlen(str) + num + 1));
+	i = -1;
+	if (idx == 1)
+		res[0] = '-';
+	while (++i < num)
+		res[i + idx] = '0';
+	if (idx == 1)
+	{
+		++i;
+		++str;
+	}
+	while (*str)
+	{
+		res[i++] = *str;
+		str++;
+	}
+	res[i] = 0;
+	return res;
+}
+
+char	*ft_itoa(int n)
+{
+	char	*res;
+	int		numlen;
+	int		temp;
+	int		offset;
+	int		og_numlen;
+
+	if (n == -2147483648)
+	{
+		res = ft_strdup("-2147483648");
+		return res;
+	}
+	if (n == 0)
+	{
+		res = ft_strdup("0");
+		return res;
+	}
+	numlen = 0;
+	temp = n;
+	offset = 0;
+	if (n < 0)
+		numlen++;
+	while (temp)
+	{
+		temp /= 10;
+		numlen++;
+	}
+	res = (char *)malloc(sizeof (char) * (numlen + 1));
+	if (n < 0)
+	{
+		n *= -1;
+		res[0] = '-';
+		offset = 1;
+	}
+	og_numlen = numlen;
+	while (numlen - 1 >= offset)
+	{
+		res[numlen - 1] = '0' + (n % 10);
+		n /= 10;
+		numlen--;
+	}
+	if (n < 0)
+		res[0] = '-';
+	res[og_numlen] = 0;
+	return (res);
+}
+
 int is_conversions(char c)
 {
 	if (c == 's' || c == 'd' || c == 'x')
@@ -75,19 +203,6 @@ int is_numdot(char c)
 	if (c == '.')
 		return 1;
 	return 0;
-}
-
-char	*ft_strdup(char *str)
-{
-	char *res;
-	int	i;
-
-	res = malloc(sizeof(char) *( 1 + ft_strlen(str) ));
-	i = -1;
-	while (++i)
-		res[i] = str[i];
-	res[i] = 0;
-	return res;
 }
 
 char	*ft_strtrim(char *str, int length)
@@ -108,7 +223,7 @@ char	*ft_strtrim(char *str, int length)
 		//printf("res i : %c, str i : %c\n", res[i], str[i]);
 	}
 	res[i] = 0;
-	//printf("res : %s\n", res);
+	// printf("res : %s\n", res);
 	return res;	
 }
 
@@ -131,12 +246,17 @@ void mark_flags(char *str, int *i, struct format* format)
  	format->width = ft_atoi(str + *i);
 	offset = 0;
 	init_i = *i;
+	if (str[*i] >= '0' && str[*i] <= '9')
+		format->has_width = 1;
 	while (str[*i + offset] && str[*i + offset] <= '9' && str[*i + offset] >= '0')
 	{
 		offset++;
 	}
 	if (str[*i + offset] == '.')
+	{
+		format->has_perc = 1;
 		format->perc = ft_atoi(str + *i + offset + 1);
+	}
 	while (is_numdot(str[*i]))
 		(*i)++;
 
@@ -170,7 +290,7 @@ void	process_str(struct format *format, va_list valist)
 	}
 
 	//adjust percision
-	if (format->perc > ft_strlen(str_raw))
+	if (format->perc > ft_strlen(str_raw) || format->has_perc == 0)
 		format->perc = ft_strlen(str_raw);
 	str_trimmed = ft_strtrim(str_raw, format->perc);
 	if (is_null && format->perc < ft_strlen(str_raw))
@@ -191,7 +311,49 @@ void	process_str(struct format *format, va_list valist)
 
 void	process_dec(struct format  *format, va_list valist)
 {
+	int		num;
+	int		numlen_raw;
+	char	*numstr_raw;
+	char	*numstr_trimmed;
 
+	num = va_arg(valist, int);
+
+	//get numstr and raw numlen (without sign)
+	numstr_raw = ft_itoa(num);
+	numlen_raw = ft_numlen(num);
+	// printf("numstr raw %s\n", numstr_raw);
+	// printf("numlen raw %d\n", numlen_raw);
+
+	//adjust for percision
+	if (format->perc <= numlen_raw)
+		format->perc = 0;
+	else
+		format->perc -= numlen_raw;
+
+	//string is nth when zero perc and zero value
+	//add zeros 0th idx onwards if num is positive
+	//add zeros 1st idx onwards if num is negative
+	if (num == 0 && format->width == 0 && format->has_width)
+		numstr_trimmed = ft_strdup("0");
+	else if (num == 0 && format->perc == 0 && format->has_perc)
+		numstr_trimmed = ft_strdup("");
+	else if (num >= 0)
+		numstr_trimmed = ft_addzero(numstr_raw, format->perc, 0);
+	else
+		numstr_trimmed = ft_addzero(numstr_raw, format->perc, 1);
+
+	//adjust for width
+	format->width = format->width - ft_strlen(numstr_trimmed);
+	if (format->width < 0)
+		format->width = 0;
+	print_spaces(format);
+
+	//print numstr_trimmed w/ width and increment letters print
+	//printf("numstr trimmed %s\n", numstr_trimmed);
+	ft_putstr(numstr_trimmed);
+	format->letter_count += format->width + ft_strlen(numstr_trimmed);
+	free(numstr_trimmed);
+	free(numstr_raw);
 }
 
 void	process_hex(struct format  *format, va_list valist)
@@ -209,9 +371,7 @@ void	process_conversions(char *str, int i, struct format *format, va_list valist
 	if (conv == 's')
 		process_str(format, valist);
 	if (conv == 'd')
-	{
-	
-	}
+		process_dec(format, valist);
 	if (conv == 'x')
 	{
 		/* code */
@@ -250,11 +410,14 @@ int ft_printf(char *str, ... )
 	return format->letter_count;
 }
 
-int main(int argc, char const *argv[])
-{
-	// int ret = ft_printf("123456789\n");
-	int ret = printf("s10p ~%.10s` ~%.10s` ~%.10s` ~%.10s` ~%.10s`\n", "", "toto", "0123456789", "tjehurthteutuiehteute", NULL);
-	int ret2 = ft_printf("s10p ~%.10s` ~%.10s` ~%.10s` ~%.10s` ~%.10s`\n", "", "toto", "0123456789", "tjehurthteutuiehteute", NULL);
-	printf("ret : %d, ret2 : %d\n", ret, ret2);
-	return 0;
-}
+// #include <limits.h>
+// int main(int argc, char const *argv[])
+// {
+// 	// int ret = ft_printf("123456789\n");
+// 	// int ret = printf("s10p ~%.10s` ~%.10s` ~%.10s` ~%.10s` ~%.10s`\n", "", "toto", "0123456789", "tjehurthteutuiehteute", NULL);
+// 	// int ret2 = ft_printf("s10p ~%.10s` ~%.10s` ~%.10s` ~%.10s` ~%.10s`\n", "", "toto", "0123456789", "tjehurthteutuiehteute", NULL);
+// 	// printf("ret : %d, ret2 : %d\n", ret, ret2);
+// 	printf("%0d\n", 0);
+// 	ft_printf("%0d\n", 0);
+// 	return 0;
+// }
