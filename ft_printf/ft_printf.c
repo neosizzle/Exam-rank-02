@@ -371,16 +371,20 @@ void	process_dec(struct format  *format, va_list valist)
 	//string is null when zero perc and zero value
 	//add zeros 0th idx onwards if num is positive
 	//add zeros 1st idx onwards if num is negative
-	if (num == 0 && format->has_perc && format->has_width && format->perc == 0 && format->width == 0)
+	// if (num == 0 && format->has_perc && format->has_width && format->perc == 0 && format->width == 0)
+	// 	numstr_trimmed = ft_strdup("");
+	// else if (num == 0 && format->width == 0 && format->has_width && format->has_perc == 0)
+	// 	numstr_trimmed = ft_strdup("0");
+	// else if (num == 0 && format->perc == 0 && format->has_perc)
+	// 	numstr_trimmed = ft_strdup("");
+	// else if (num >= 0)
+	// 	numstr_trimmed = ft_addzero(numstr_raw, format->perc, 0);
+	// else
+	// 	numstr_trimmed = ft_addzero(numstr_raw, format->perc, 1);
+	if (num == 0 && format->has_perc && format->perc == 0)
 		numstr_trimmed = ft_strdup("");
-	else if (num == 0 && format->width == 0 && format->has_width && format->has_perc == 0)
-		numstr_trimmed = ft_strdup("0");
-	else if (num == 0 && format->perc == 0 && format->has_perc)
-		numstr_trimmed = ft_strdup("");
-	else if (num >= 0)
-		numstr_trimmed = ft_addzero(numstr_raw, format->perc, 0);
 	else
-		numstr_trimmed = ft_addzero(numstr_raw, format->perc, 1);
+		numstr_trimmed = ft_addzero(numstr_raw, format->perc, 0);
 
 	//adjust for width
 	format->width = format->width - ft_strlen(numstr_trimmed);
