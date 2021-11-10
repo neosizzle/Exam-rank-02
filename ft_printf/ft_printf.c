@@ -490,6 +490,8 @@ int ft_printf(char *str, ... )
 #include <limits.h>
 int main(int argc, char const *argv[])
 {
+	int ret = printf("s4p ~` ~%.4s` ~%.4s` ~%.4s` ~%.4s`\n", "toto", "0123456789", "tjehurthteutuiehteute", NULL);
+	int ret2 = ft_printf("s4p ~` ~%.4s` ~%.4s` ~%.4s` ~%.4s`\n", "toto", "0123456789", "tjehurthteutuiehteute", NULL);
 	printf("ret : %d, ret2 : %d\n", ret, ret2);
 	return 0;
 }
