@@ -485,6 +485,7 @@ int ft_printf(char *str, ... )
 		}
 		
 	}
+	va_end(valist);
 	return format->letter_count;
 }
 
