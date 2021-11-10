@@ -9,7 +9,6 @@ struct format
 	int has_width;
 	int	perc;
 	int	width;
-	int letter_count;
 };
 
 void	clear_format(struct format *format)
@@ -309,7 +308,7 @@ void mark_flags(char *str, int *i, struct format* format)
 	//printf("Width : %d, Perc : %d, init i : %d, i %d\n", format->width, format->perc, init_i, *i);
 }
 
-void	process_str(struct format *format, va_list valist)
+void	process_str(struct format *format, va_list valist, int *letter_count)
 {
 	char	*str_raw;
 	char	*str_trimmed;
@@ -341,12 +340,11 @@ void	process_str(struct format *format, va_list valist)
 	//print string
 	//printf("str_trimmed : %s, str_raw: %s\n", str_trimmed, str_raw);
 	ft_putstr(str_trimmed);
-	int ltrcnt = format->letter_count;
-	format->letter_count = ltrcnt + format->width + ft_strlen(str_trimmed);
+	(*letter_count) += format->width + ft_strlen(str_trimmed);
 	free(str_trimmed);
 }
 
-void	process_dec(struct format  *format, va_list valist)
+void	process_dec(struct format  *format, va_list valist, int *letter_count)
 {
 	int		num;
 	int		numlen_raw;
@@ -398,12 +396,12 @@ void	process_dec(struct format  *format, va_list valist)
 	//print numstr_trimmed w/ width and increment letters print
 	//printf("numstr trimmed %s\n", numstr_trimmed);
 	ft_putstr(numstr_trimmed);
-	format->letter_count += format->width + ft_strlen(numstr_trimmed);
+	(*letter_count) += format->width + ft_strlen(numstr_trimmed);
 	free(numstr_trimmed);
 	free(numstr_raw);
 }
 
-void	process_hex(struct format  *format, va_list valist)
+void	process_hex(struct format  *format, va_list valist, int *letter_count)
 {
 	char			*hexstr_raw;
 	char			*hexstr_trimmed;
@@ -438,28 +436,29 @@ void	process_hex(struct format  *format, va_list valist)
 
 	//putstr and free, incremt letter cnt
 	ft_putstr(hexstr_trimmed);
-	format->letter_count += format->width + ft_strlen(hexstr_trimmed);
+	(*letter_count) += format->width + ft_strlen(hexstr_trimmed);
 	free(hexstr_trimmed);
 	free(hexstr_raw);
 }
 
-void	process_conversions(char *str, int i, struct format *format, va_list valist)
+void	process_conversions(char *str, int i, struct format *format, va_list valist, int *letter_count)
 {
 	char	conv;
 
 	conv = str[i];
 	if (conv == 's')
-		process_str(format, valist);
+		process_str(format, valist, letter_count);
 	if (conv == 'd')
-		process_dec(format, valist);
+		process_dec(format, valist, letter_count);
 	if (conv == 'x')
-		process_hex(format, valist);
+		process_hex(format, valist, letter_count);
 	
 }
 
 int ft_printf(char *str, ... )
 {
 	int	i;
+	int	letter_count;
 	va_list	valist;
 	struct format *format;
 
@@ -468,25 +467,25 @@ int ft_printf(char *str, ... )
 	va_start(valist, str);
 	i = -1;
 	format = (struct format *)malloc(sizeof(format));
-	format->letter_count = 0;
+	letter_count = 0;
 	while (++i < ft_strlen(str))
 	{
 		clear_format(format);
 		if (str[i] != '%')
 		{
 			ft_putchar(str[i]);
-			format->letter_count++;
+			letter_count++;
 		}
 		else
 		{
 			++i;
 			mark_flags(str, &i, format);
-			process_conversions(str, i, format, valist);
+			process_conversions(str, i, format, valist, &letter_count);
 		}
 		
 	}
 	va_end(valist);
-	return format->letter_count;
+	return letter_count;
 }
 
 #include <limits.h>
