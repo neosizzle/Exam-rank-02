@@ -341,7 +341,8 @@ void	process_str(struct format *format, va_list valist)
 	//print string
 	//printf("str_trimmed : %s, str_raw: %s\n", str_trimmed, str_raw);
 	ft_putstr(str_trimmed);
-	format->letter_count += format->width + ft_strlen(str_trimmed);
+	int ltrcnt = format->letter_count;
+	format->letter_count = ltrcnt + format->width + ft_strlen(str_trimmed);
 	free(str_trimmed);
 }
 
