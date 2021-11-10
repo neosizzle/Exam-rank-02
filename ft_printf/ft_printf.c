@@ -328,8 +328,8 @@ void	process_str(struct format *format, va_list valist, int *letter_count)
 	if (format->perc > ft_strlen(str_raw) || format->has_perc == 0)
 		format->perc = ft_strlen(str_raw);
 	str_trimmed = ft_strtrim(str_raw, format->perc);
-	if (is_null && format->perc < ft_strlen(str_raw))
-		str_trimmed = ft_strdup("");
+	// if (is_null && format->perc < ft_strlen(str_raw)) // Mac os doeas not use this
+	// 	str_trimmed = ft_strdup("");
 
 	//adjust width
 	format->width = format->width - ft_strlen(str_trimmed);
