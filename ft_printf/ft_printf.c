@@ -444,7 +444,6 @@ void	process_hex(struct format  *format, va_list valist)
 
 void	process_conversions(char *str, int i, struct format *format, va_list valist)
 {
-	char	*test;
 	char	conv;
 
 	conv = str[i];
@@ -488,11 +487,13 @@ int ft_printf(char *str, ... )
 	return format->letter_count;
 }
 
-// #include <limits.h>
-// int main(int argc, char const *argv[])
-// {
-// 	int ret = printf("%.5d\n", -1);
-// 	int ret2 = ft_printf("%.5d\n", -1);
-// 	printf("ret : %d, ret2 : %d\n", ret, ret2);
-// 	return 0;
-// }
+/*
+#include <limits.h>
+int main(int argc, char const *argv[])
+{
+	int ret = printf("s4p ~%.4s` ~%.4s` ~%.4s` ~%.4s` ~%.4s`\n", "", "toto", "0123456789", "tjehurthteutuiehteute", NULL);
+	int ret2 = ft_printf("s4p ~%.4s` ~%.4s` ~%.4s` ~%.4s` ~%.4s`\n", "", "toto", "0123456789", "tjehurthteutuiehteute", NULL);
+	printf("ret : %d, ret2 : %d\n", ret, ret2);
+	return 0;
+}
+*/
